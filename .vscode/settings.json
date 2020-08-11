@@ -1,0 +1,11 @@
+{
+    "C_Cpp.default.includePath": [
+        "/src/nginx/src/core",
+        "/src/nginx/src/http",
+        "/src/nginx/src/http/modules",
+        "/src/nginx/src/event",
+        "/src/nginx/src/os/unix",
+        "/src/pcre",
+        "/src/nginx/objs"
+    ]
+}

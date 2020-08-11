@@ -5,6 +5,7 @@ WORKDIR /src/nginx
 
 RUN apt -y update && \
     apt -y upgrade && \
-    apt -y install gcc g++ make
+    apt -y install gcc g++ make git
 
-ENTRYPOINT [ "make", "modules" ]
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
