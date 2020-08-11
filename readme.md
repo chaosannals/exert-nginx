@@ -27,6 +27,10 @@ docker exec -it exert-nginx /bin/bash
 
 #### 容器内执行编译
 
+config 文件必须是 LF 格式，Windows 下 CRLF 会导致错误，如果被 GIT 设置为 CRLF 格式，自行修改成 LF。
+
+编译路径在 /src/nginx
+
 ```bash
 ./configure --with-compat --with-pcre=/src/pcre --with-zlib=/src/zlib --add-dynamic-module=/wks
 
