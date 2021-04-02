@@ -1,0 +1,19 @@
+version: '3.8'
+
+services: 
+  nginx-server:
+    build:
+      dockerfile: dockerfile
+      context: .
+    container_name: exert-nginx-server
+    ports:
+      - 50080:80
+    volumes:
+      - ./conf:/etc/nginx:ro
+    networks: 
+      - exert-nginx-net
+
+networks:
+  exert-nginx-net:
+    name: exert-nginx-net
+    driver: bridge
