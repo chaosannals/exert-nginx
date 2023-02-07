@@ -8,7 +8,7 @@
 3. 依赖的 lib 少了。（例：缺少系统的 User32.lib 链接参数）
 4. cl 配置出问题。（例：启用 \WX 导致警告被当作错误。）
 5. git 拉取版本 和 官网 zip 下载源码不同， zip 版本要用 autoconf 生成 configure ，才能用 configure 生成 makefile
-6. ico 文件没有链接进 exe ，不过这个不影响使用。(例：生成的 makefile 缺少 /link objs/src/os/win32/nginx.rc)。
+6. ico 文件没有链接进 exe ，不过这个不影响使用。(例：生成的 makefile 缺少把 src/os/win32/nginx.rc 生成 src/os/win32/nginx.res 并添加到链接里面)。
 7. 使用和官方的编译工具版本一致（VC++这些，应该可以少踩坑）
 8. 依赖的库使用和官方版本参数一致的版本（openssl版本选用一样的，应该可以少踩坑）
 9. 多次编译失败修改后成功的，之前步骤生成了文件，之后改动后又通过，但是清理后在编译可能失败。
@@ -18,6 +18,9 @@
 ```bat
 @rem 查看 nginx 编译参数
 nginx -V
+
+@rem 生成 rc 生成 res 文件
+rc src/os/win32/nginx.rc
 ```
 
 ```bash
