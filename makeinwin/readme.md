@@ -1,5 +1,20 @@
 # make nginx in windows
 
+关于 nginx 的 windows 编译没有太多规律可循。我 2015年 2017年 2020年 2023年编译，每次编译 nginx 出现的问题都不同。
+基本上的思路是用 nginx -V 查看官方编译的信息，之后报了什么错就去网上查，大概问题分成以下几类：
+
+1. 因为使用 Msys2 生成 makefile 所以有些 .obj 后缀是 .o 的，需要手动修改生成的 makefile
+2. 生成的 cl 命令使用了老的命令（例如： -o output/path.obj 指定 obj 文件输出改用 /Fo"output/path.obj"）
+3. 依赖的 lib 少了。（例：缺少系统的 User32.lib 链接参数）
+4. cl 配置出问题。（例：启用 \WX 导致警告被当作错误。）
+5. git 拉取版本 和 官网 zip 下载源码不同， zip 版本要用 autoconf 生成 configure ，才能用 configure 生成 makefile
+6. ico 文件没有链接进 exe ，不过这个不影响使用。(例：生成的 makefile 缺少 /link objs/src/os/win32/nginx.rc)。
+7. 使用和官方的编译工具版本一致（VC++这些，应该可以少踩坑）
+8. 依赖的库使用和官方版本参数一致的版本（openssl版本选用一样的，应该可以少踩坑）
+9. 多次编译失败修改后成功的，之前步骤生成了文件，之后改动后又通过，但是清理后在编译可能失败。
+
+注：以下参数仅供参考，实际编译时因为版本和编译工具依赖库使用不同，会出现各种问题。
+
 ```bat
 @rem 查看 nginx 编译参数
 nginx -V
