@@ -2,8 +2,56 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 
+// NGX_LOG_INFO 在 docker 下看不到 stdout 的输出
+// NGX_LOG_ERR 可以在 docker 下看到 stderr 的输出
+
 static char *ngx_http_grayngx(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_grayngx_handler(ngx_http_request_t *r);
+
+/***************************************************************************
+ * 周期处理程序区
+ */
+
+ /**
+  * master 进程初始化阶段
+  * 因为是通过 load_module 加载，所以此时 master 已经启动了，所以没有进入这个阶段。
+  * 这个阶段必须集成编译到 nginx 里面才会触发，nginx.conf 动态加载不会触发。
+  */
+static ngx_int_t on_init_master(ngx_log_t *log) {
+    ngx_log_error(NGX_LOG_INFO, log, 0, "grayngx on init master");
+    return NGX_OK;
+}
+
+/**
+ * 模块初始化阶段，从日志上看启动的时候被调用了 2 次。有点奇怪。
+ */
+static ngx_int_t on_init_module(ngx_cycle_t *cycle) {
+    ngx_log_error(NGX_LOG_ERR, cycle->log, 0, "grayngx on init module start");
+
+    ngx_uint_t i;
+    for (i = 0; cycle->modules[i]; i++) {
+        if (cycle->modules[i]->init_module) {
+            ngx_log_error(NGX_LOG_ERR, cycle->log, 0, "grayngx on init module has init_module");
+            // 如果执行下面的代码区再次调用 init_module 会造成无限死循环。
+            // if (cycle->modules[i]->init_module(cycle) != NGX_OK) {
+            //     return NGX_ERROR;
+            // }
+        }
+    }
+
+    ngx_log_error(NGX_LOG_ERR, cycle->log, 0, "grayngx on init module: %d", i);
+
+    return NGX_OK;
+}
+
+/**
+ * 进程初始化阶段
+ * nginx.conf 里 worker_processes 的数量影响到这个被调用的次数。
+ */
+ static ngx_int_t on_init_process(ngx_cycle_t *cycle) {
+    ngx_log_error(NGX_LOG_INFO, cycle->log, 0, "grayngx on init process");
+    return NGX_OK;
+ }
 
 /**********************************************************************
  * 配置区
@@ -52,24 +100,15 @@ ngx_module_t ngx_http_grayngx_module = {
     &ngx_http_grayngx_module_ctx, /* module context */
     ngx_http_grayngx_commands,    /* module directives */
     NGX_HTTP_MODULE,            /* module type */
-    // on_init_master,                       /* init master */
-    NULL,                       /* init master */
-    NULL,                       /* init module */
-    NULL,                       /* init process */
+    on_init_master,                       /* init master */
+    on_init_module,                       /* init module */
+    on_init_process,                /* init process */
     NULL,                       /* init thread */
     NULL,                       /* exit thread */
     NULL,                       /* exit process */
     NULL,                       /* exit master */
     NGX_MODULE_V1_PADDING       /**/
 };
-
-/***************************************************************************
- * 周期处理程序区
- */
-// static ngx_int_t on_init_master(ngx_log_t *log) {
-//     
-// }
-
 
 /****************************************************************************
  * 命令定义区
@@ -100,6 +139,8 @@ static ngx_int_t ngx_http_grayngx_handler(ngx_http_request_t *r)
 {
     ngx_buf_t *b;
     ngx_chain_t out;
+
+    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "on grayngx command run.");
 
     /* 设置 HTTP Content-Type 报首信息。 */
     r->headers_out.content_type.len = sizeof("text/plain") - 1;
