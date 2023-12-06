@@ -36,7 +36,10 @@ func replaceConf(path string) error {
 	end := 1 + rand.Intn(len(servers)-1)
 	newServers := strings.Join(servers[:end], "\n")
 	newContent := fmt.Sprintf("upstream goserver {\n %s \n}", newServers)
-	fmt.Printf("new: %s\n", newContent)
+
+	newConf := pattern.ReplaceAll(content, []byte(newContent))
+	os.WriteFile(path, newConf, 0755)
+	fmt.Printf("new: %s\n", newConf)
 
 	return nil
 }
