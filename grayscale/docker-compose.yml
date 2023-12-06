@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 用于灰度的 nginx
+  grayscale-nginx:
+    container_name: grayscale-nginx
+    image: nginx:1.25.3
+    ports:
+      - 40080:80
+    volumes:
+      - ./conf:/etc/nginx:ro
+    networks: 
+      - grayscale-nginx-net
+
+  # 服务器 go 1
+  grayscale-server-go-1:
+    container_name: grayscale-server-go-1
+    build:
+      dockerfile: dockerfile
+      context: servergo
+    working_dir: /
+    command: /bin/servergo
+    networks: 
+      - grayscale-nginx-net
+
+  # 服务器 go 2
+  grayscale-server-go-2:
+    container_name: grayscale-server-go-2
+    build:
+      dockerfile: dockerfile
+      context: servergo
+    working_dir: /
+    command: /bin/servergo
+    networks: 
+      - grayscale-nginx-net
+
+
+networks:
+  grayscale-nginx-net:
+    name: grayscale-nginx-net
+    driver: bridge

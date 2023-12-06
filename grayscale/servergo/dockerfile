@@ -1,0 +1,15 @@
+FROM golang:1.21.4 AS builder
+
+COPY ./ /src
+
+RUN cd /src && \
+    go env -w  GOPROXY=https://goproxy.cn,direct && \
+    go mod tidy && \
+    go build
+
+
+# FROM alpine:20230901 # 无法识别生成的程序
+FROM golang:1.21.4
+
+# exe 可执行文件不能放在 / 下，不然不能执行。
+COPY --from=builder /src/grayscale /bin/servergo
