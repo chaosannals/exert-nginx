@@ -1,3 +1,4 @@
+# 编译 confgo 命令工具
 FROM golang:1.21.4 AS builder
 
 COPY ./confgo /confgo
@@ -7,9 +8,29 @@ RUN cd /confgo && \
     go mod tidy && \
     go build
 
+
+# 编译 自定义 nginx 扩展
+# FROM nginx:1.25.3 as modBuider
+# 这是个本地镜像，必须先执行 grayngx 打包生成镜像。（开发工具太大，下载太久，所以打成一个镜像复用）
+FROM grayngxbuilder as modBuider
+
+COPY ./grayngx/src /src
+
+RUN pwd && \
+    ./configure \
+        --with-compat \
+        --with-pcre \
+        --with-zlib=/wks/zlib-1.3 \
+        --add-dynamic-module=/src \
+        && \
+    make modules
+
+
+# 合并生成物，生成最终镜像
 FROM nginx:1.25.3
 
 COPY --from=builder /confgo/confgo /confgo
+COPY --from=modBuider /wks/nginx-1.25.3/objs /mod
 
 COPY ./conf /etc/nginx
 

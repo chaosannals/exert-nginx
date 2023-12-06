@@ -1,0 +1,4 @@
+#ifndef NGX_HTTP_GRAYNGX_MODULE_H
+#define NGX_HTTP_GRAYNGX_MODULE_H
+
+#endif

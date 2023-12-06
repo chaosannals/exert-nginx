@@ -3,6 +3,11 @@
 ## 开发
 
 ```bash
+# 构建 nginx 扩展镜像生成
+docker build -f ./grayngx/dockerfile -t grayngxbuilder ./grayngx
+```
+
+```bash
 # 修改代码后重新上 nginx
 
 # 下 nginx
