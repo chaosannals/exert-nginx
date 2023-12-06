@@ -1,0 +1,15 @@
+FROM golang:1.21.4 AS builder
+
+COPY ./confgo /confgo
+
+RUN cd /confgo && \
+    go env -w  GOPROXY=https://goproxy.cn,direct && \
+    go mod tidy && \
+    go build
+
+FROM nginx:1.25.3
+
+COPY --from=builder /confgo/confgo /confgo
+
+COPY ./conf /etc/nginx
+
